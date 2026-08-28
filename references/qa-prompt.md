@@ -44,6 +44,7 @@ E2E 测试通过当前环境已配置的 WDIO MCP server（`@wdio/mcp`）执行�
 
 注意事项：
 
+- **第一步必须是 `start_session`，不要直接访问指定网页**：`navigate`、`get_elements`、`click_element` 等所有页面操作都依赖已存在的会话，未 `start_session` 就调用它们会直接失败。正确顺序：`start_session` → `navigate` → 操作 → `close_session`，一次 E2E 恰好一对开闭。
 - 交互前先用 `get_elements` 或 `get_accessibility_tree` 获取真实选择器，按返回的选择器操作，不要凭空猜测元素。
 - 截图证据必须落盘：`get_screenshot` 返回图像数据，将其通过 shell 解码写入 `<迭代目录绝对路径>/evidence-N.png`；若当前环境无法落盘，在报告中注明并以对话内截图为证。
 - 测试结束务必 `close_session` 关闭会话，避免残留浏览器进程。
@@ -96,7 +97,7 @@ E2E 测试通过当前环境已配置的 WDIO MCP server（`@wdio/mcp`）执行�
 3. **功能性测试**：
    - **必须先判断本次迭代是否涉及 UI 界面或用户交互。** 若是，则必须执行 E2E 测试，禁止跳过。
    - 先按「未配置检测与上报」确认 WDIO MCP 已配置；未配置则上报 Pm，终止本次 E2E。
-   - 使用 `start_session` 启动浏览器会话，`navigate` 打开目标页面（URL 从项目配置/AGENTS.md 获取，或请 Pm 向用户确认）
+   - **第一步必须 `start_session` 建立浏览器会话（切忌跳过会话直接 `navigate` 访问网页），成功后再 `navigate` 打开目标页面**（URL 从项目配置/AGENTS.md 获取，或请 Pm 向用户确认）
    - 通过 `get_elements`/`get_accessibility_tree` 获取元素，用 `click_element`/`set_value`/`scroll` 模拟真实用户操作：导航、输入、点击、滚动
    - 走完该迭代的核心用户路径，记录所有异常行为和 bug
    - 操作完成后，**使用 `get_screenshot` 截图至少 1 张并落盘为 `<迭代目录绝对路径>/evidence-1.png` 作为测试证据**（报告中列出截图文件名）
