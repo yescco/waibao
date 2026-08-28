@@ -1,0 +1,6 @@
+# agent harness 本地产物
+.zcode/
+
+# 系统文件
+Thumbs.db
+.DS_Store

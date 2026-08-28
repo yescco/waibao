@@ -1,0 +1,5 @@
+interface:
+  display_name: waibao 外包模式
+  short_description: Pm/Dev/Qa 三角色协作：需求探讨→PRD→迭代开发→QA验收→UAT 全流程托管
+policy:
+  allow_implicit_invocation: true
