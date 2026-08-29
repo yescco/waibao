@@ -29,7 +29,7 @@ E2E 测试通过当前环境已配置的 WDIO MCP server（`@wdio/mcp`）执行�
 
 | 操作 | 工具 | 说明 |
 | ---- | ---- | ---- |
-| 启动会话 | `start_session` | 启动浏览器（或移动端）会话 |
+| 启动会话 | `start_session` | 启动浏览器（或移动端）会话；浏览器会话必须显式传 `headless: false` 以有头模式启动 |
 | 页面导航 | `navigate` | 在当前标签页加载 URL |
 | 获取可交互元素 | `get_elements` | 返回元素及其 CSS 选择器 / ID / 类名 / ARIA 信息 |
 | 获取可访问性树 | `get_accessibility_tree` | 按角色过滤的结构化页面树 |
@@ -45,6 +45,7 @@ E2E 测试通过当前环境已配置的 WDIO MCP server（`@wdio/mcp`）执行�
 注意事项：
 
 - **第一步必须是 `start_session`，不要直接访问指定网页**：`navigate`、`get_elements`、`click_element` 等所有页面操作都依赖已存在的会话，未 `start_session` 就调用它们会直接失败。正确顺序：`start_session` → `navigate` → 操作 → `close_session`，一次 E2E 恰好一对开闭。
+- **浏览器必须以有头模式启动（显式传 `headless: false`）**：`start_session` 的 `headless` 参数默认为 `true`（无头），不传就是无头模式。无头模式可能出现意外的渲染问题（视口/布局差异、懒加载与动画不触发等），导致页面表现与真实用户所见不符、截图证据失真。因此启动浏览器会话时必须显式传 `headless: false`，禁止以无头模式执行 E2E（移动端会话不涉及该参数）。
 - 交互前先用 `get_elements` 或 `get_accessibility_tree` 获取真实选择器，按返回的选择器操作，不要凭空猜测元素。
 - 截图证据必须落盘：`get_screenshot` 返回图像数据，将其通过 shell 解码写入 `<迭代目录绝对路径>/evidence-N.png`；若当前环境无法落盘，在报告中注明并以对话内截图为证。
 - 测试结束务必 `close_session` 关闭会话，避免残留浏览器进程。
@@ -61,6 +62,7 @@ E2E 测试通过当前环境已配置的 WDIO MCP server（`@wdio/mcp`）执行�
 2. **E2E 工具未配置时，不得自行跳过或放水**：按「未配置检测与上报」向 Pm 上报，等待用户决策。
 3. **用户拒绝配置 WDIO MCP 时，按 E2E 降级模式继续**：功能性、视觉设计两维度不评分，在报告中标注「E2E 未执行——用户未配置工具」，迭代不因此判不通过，验收责任转移至用户 UAT。
 4. **若 E2E 工具已配置但环境不可用（如 dev server 未启动），Qa 必须在报告中明确标注"E2E 测试未执行——环境不可用"，功能性维度和视觉设计维度自动判定为不通过（得分 0）。** 不得以任何借口跳过 E2E 测试后仍给出通过分数。
+5. **浏览器会话必须有头启动**：调用 `start_session` 时必须显式传 `headless: false`（该参数默认为 `true`，不传即无头）。禁止以无头模式执行 E2E 测试——无头模式的渲染问题会使测试结果和截图证据不可信。
 
 ---
 
@@ -97,7 +99,7 @@ E2E 测试通过当前环境已配置的 WDIO MCP server（`@wdio/mcp`）执行�
 3. **功能性测试**：
    - **必须先判断本次迭代是否涉及 UI 界面或用户交互。** 若是，则必须执行 E2E 测试，禁止跳过。
    - 先按「未配置检测与上报」确认 WDIO MCP 已配置；未配置则上报 Pm，终止本次 E2E。
-   - **第一步必须 `start_session` 建立浏览器会话（切忌跳过会话直接 `navigate` 访问网页），成功后再 `navigate` 打开目标页面**（URL 从项目配置/AGENTS.md 获取，或请 Pm 向用户确认）
+   - **第一步必须 `start_session` 建立浏览器会话（切忌跳过会话直接 `navigate` 访问网页），且必须显式传 `headless: false` 有头启动**（`headless` 默认为 `true`，无头模式可能出现意外的渲染问题，禁止无头执行），成功后再 `navigate` 打开目标页面（URL 从项目配置/AGENTS.md 获取，或请 Pm 向用户确认）
    - 通过 `get_elements`/`get_accessibility_tree` 获取元素，用 `click_element`/`set_value`/`scroll` 模拟真实用户操作：导航、输入、点击、滚动
    - 走完该迭代的核心用户路径，记录所有异常行为和 bug
    - 操作完成后，**使用 `get_screenshot` 截图至少 1 张并落盘为 `<迭代目录绝对路径>/evidence-1.png` 作为测试证据**（报告中列出截图文件名）
@@ -127,6 +129,7 @@ E2E 测试通过当前环境已配置的 WDIO MCP server（`@wdio/mcp`）执行�
 ## E2E 测试执行确认
 
 - [ ] E2E 测试已执行（涉及 UI 时必填）
+- [ ] 浏览器已以有头模式启动（`start_session` 显式传了 `headless: false`）
 - [ ] 截图证据已保存至迭代目录（至少 1 张，报告中列出文件名）
 - [ ] 若未执行，原因：（WDIO MCP 未配置，已上报 / 用户拒绝配置——E2E 降级模式 / 环境不可用 / 不涉及 UI / 其他）
 
