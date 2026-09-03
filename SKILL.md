@@ -40,7 +40,7 @@ description: waibao（外包）模式——Pm/Dev/Qa 三角色协作的全流程
 | 子代理调度 | ZCode：`Agent` 工具（subagent_type: general-purpose）；dsh：`subagent` 工具（无类型参数，角色由注入的 prompt 决定）；opencode：`task` 工具 | 降级为单角色串行模式（见下） |
 | 结构化提问 | ZCode：`AskUserQuestion`；dsh：`ask_user_question` | 用纯文本编号选项（见「沟通风格」） |
 | 文件读写 / shell 执行 | 各框架均有（Read/Write/Edit/Bash 等） | 必有，无需降级 |
-| E2E 测试 | 已配置 WDIO MCP（`@wdio/mcp`）→ Qa 通过其工具执行 E2E | 触发「阶段四 · E2E 工具上报流程」 |
+| E2E 测试 | PC Web/Electron：playwright-cli（Bash 即可用，缺失时 `npx playwright cli` 兜底）；移动端：WDIO MCP（`@wdio/mcp`）→ Qa 按被测目标形态选用 | 触发「阶段四 · E2E 工具上报流程」 |
 
 **降级单角色串行模式**（环境无子代理机制时）：由你在同一上下文中依次切换 Dev / Qa 视角完成任务，但必须保持验收纪律：
 
@@ -65,7 +65,7 @@ description: waibao（外包）模式——Pm/Dev/Qa 三角色协作的全流程
 1. 每次委派前，先读取对应角色提示词文件（位于本 skill 目录的 `references/` 下；按用户主目录安装时即 `~/.agents/skills/waibao/references/`）：
    - Dev：`references/dev-prompt.md`
    - Qa：`references/qa-prompt.md`
-2. 调用时，`prompt` = 角色提示词全文 + 本次任务上下文。传给 Dev：本次迭代目标、关联 PRD 需求、上一轮 QA 报告（如有）、用户评审意见（如有，评审打回时）、迭代提交门禁通知或提交指令（开发/修复时注明「门禁通过前不得 commit」，门禁通过后注明「请提交本次迭代全部变更」）。传给 Qa：本次迭代目标、关联 PRD 需求、Dev 自评报告、上次 QA 报告（如有）、用户评审意见（如有，评审打回后重新验收时）、迭代目录绝对路径（供 Qa 存放 E2E 截图证据）。
+2. 调用时，`prompt` = 角色提示词全文 + 本次任务上下文。传给 Dev：本次迭代目标、关联 PRD 需求、上一轮 QA 报告（如有）、用户评审意见（如有，评审打回时）、迭代提交门禁通知或提交指令（开发/修复时注明「门禁通过前不得 commit」，门禁通过后注明「请提交本次迭代全部变更」）。传给 Qa：本次迭代目标、被测目标形态（PC Web / Electron / 移动端——据实判定并注明，供 Qa 选定 E2E 工具与测试上下文）、关联 PRD 需求、Dev 自评报告、上次 QA 报告（如有）、用户评审意见（如有，评审打回后重新验收时）、迭代目录绝对路径（供 Qa 存放 E2E 截图证据）。
    - dsh 的 `subagent` 工具要求 prompt 完全自包含，本协议的注入方式天然满足；若其子代理继承父对话上下文（fork 模式），仍须完整注入角色提示词，且 Qa 的评审只依据落盘产物与项目代码，不得引用对话记忆。
 3. **子代理只返回文本结论**（迭代计划、自评报告、QA 报告全文）。所有工作流文档一律由你（Pm）写入 `<DATA>` 下对应文件。
 4. Dev 是唯一允许修改项目源码并 `git commit` 的角色（提交受迭代提交门禁约束，见「非侵入与 Git 约定」）；Qa 只读代码、只产出报告文本与截图证据文件。
@@ -170,7 +170,7 @@ C. 先生成低保真原型确认
 
 1. **调度 Dev**：通过子代理调度工具委派 Dev 子代理处理本次迭代开发（注入 Dev 角色提示词，传入上下文和本次迭代内容，并注明「迭代提交门禁：验收（及用户评审，若启用）通过前不得 commit」）。
 2. **Dev 完成自评**：Dev 返回自评报告全文 → 你写入 `<DATA>/tasks/task-YYYYMMDD-{slug}/iter-N/self-check.md`。
-3. **调度 Qa**：涉及 UI 或用户交互的迭代，先按「E2E 工具上报流程」确认 WDIO MCP 已配置，再通过子代理调度工具委派 Qa 子代理进行四维度验收（注入 Qa 角色提示词，传入本次迭代的 PRD 需求、Dev 自评报告、迭代目标、迭代目录绝对路径；若是用户评审打回后的修复，一并传入用户评审意见）。
+3. **调度 Qa**：涉及 UI 或用户交互的迭代，先判定本次迭代的被测目标形态（PC Web / Electron / 移动端，按 PRD 与项目实际运行形态据实判定），再按「E2E 工具上报流程」确认该场景对应的 E2E 工具可用（PC Web/Electron 为 playwright-cli；移动端为 WDIO MCP）。**Electron 场景必须先由你以调试端口启动被测应用、确认端口可访问（如 `curl http://localhost:9222/json/version` 有响应）后再调度 Qa**，避免 Qa 因连不上应用而自行降级为浏览器打开页面。随后通过子代理调度工具委派 Qa 子代理进行四维度验收（注入 Qa 角色提示词，传入本次迭代的 PRD 需求、Dev 自评报告、迭代目标、被测目标形态、迭代目录绝对路径；若是用户评审打回后的修复，一并传入用户评审意见）。
 4. **Qa 返回结果**：将 Qa 报告全文写入 `<DATA>/tasks/task-YYYYMMDD-{slug}/iter-N/qa-report.md`。
    - **通过**：若任务启用用户代码评审 → 进入步骤 5（用户代码评审）；未启用 → 直接进入步骤 6（调度 Dev 提交）。
    - **不通过**：检查退化计数：
@@ -186,11 +186,12 @@ C. 先生成低保真原型确认
 
 ## E2E 工具上报流程
 
-Qa 的 E2E 测试依赖当前环境已配置的 WDIO MCP server（`@wdio/mcp`）。调度 Qa 前，或收到 Qa 上报「WDIO MCP 未配置」时，按以下流程处理：
+Qa 的 E2E 按被测目标形态选工具：PC Web 与 Electron 用 playwright-cli（命令行工具），移动端用 WDIO MCP server（`@wdio/mcp`）。调度 Qa 前，或收到 Qa 上报工具不可用时，按以下流程处理：
 
-1. **询问用户**：告知用户当前环境未配置 E2E 工具，询问是否现在配置 `@wdio/mcp`（WebDriverIO 官方 MCP server，同一套工具支持浏览器与移动端 E2E）。
-2. **用户同意配置**：按当前 agent 工具自身的 MCP 配置方式引导用户注册 `@wdio/mcp`，Pm 不预设、不写死任何工具的具体配置细节；建议注册在用户级/工具级配置中，保持项目目录零侵入。配置生效可能需要重启会话——工作流状态已持久化在 `state.md`，重启后重新触发本 skill 即可按「中断恢复」续接，然后重新调度 Qa。
-3. **用户拒绝配置**：通知 Qa 按「E2E 降级模式」继续验收——功能性、视觉设计两维度不评分并注明原因，产品完整性与代码质量照常评分，迭代不因此判不通过，验收责任转移至用户 UAT。降级不消耗退化计数。
+1. **PC Web / Electron 场景（playwright-cli 不可用）**：询问用户是否安装 playwright-cli——全局安装 `npm install -g @playwright/cli@latest`，或直接以 `npx playwright cli` 免安装使用。安装属用户级操作，项目目录零侵入，即时生效、无需重启会话。
+2. **移动端场景（WDIO MCP 未配置）**：告知用户当前环境未配置移动端 E2E 工具，询问是否现在配置 `@wdio/mcp`（WebDriverIO 官方 MCP server，支持 iOS/Android 真机与模拟器）。用户同意则按当前 agent 工具自身的 MCP 配置方式引导注册，Pm 不预设、不写死任何工具的具体配置细节；建议注册在用户级/工具级配置中，保持项目目录零侵入。配置生效可能需要重启会话——工作流状态已持久化在 `state.md`，重启后重新触发本 skill 即可按「中断恢复」续接，然后重新调度 Qa。
+3. **Electron 场景（被测应用未以调试端口运行）**：收到 Qa 上报后，由你（Pm）以后台方式启动被测应用并暴露调试端口（如 `npx electron . --remote-debugging-port=9222`，以后台任务运行避免阻塞），**确认端口可访问（如 `curl http://localhost:9222/json/version` 有响应）后再告知 Qa**，确保 Qa 能 attach 到真实应用进程执行 E2E、不降级取巧；Qa 的 E2E 结束后由你负责关闭该进程。你不受 Qa 的 Bash 安全原则约束，但必须后台运行、事后清理，不留残留进程。
+4. **用户拒绝安装/配置**：通知 Qa 按「E2E 降级模式」继续验收——功能性、视觉设计两维度不评分并注明原因，产品完整性与代码质量照常评分，迭代不因此判不通过，验收责任转移至用户 UAT。降级不消耗退化计数。
 
 ---
 
@@ -281,7 +282,7 @@ Qa 的 E2E 测试依赖当前环境已配置的 WDIO MCP server（`@wdio/mcp`）
 # 非侵入与 Git 约定
 
 - 所有工作流文档产物（PRD、state.md、iterations.md、self-check.md、qa-report.md、index.md、E2E 截图）全部位于 `~/.agents/waibao/`（用户主目录），项目目录除 Dev 的源码改动外零写入，因此**无需在项目 `.gitignore` 中添加任何规则**。
-- E2E 工具（WDIO MCP）的注册配置放在用户级/工具级配置中，不写入项目目录。
+- E2E 工具的安装/注册（playwright-cli 的全局安装、WDIO MCP 的注册配置）均在用户级/工具级完成，不写入项目目录。
 - **Dev 的代码提交（迭代提交门禁制）**：Dev 修改的源码、配置、测试位于项目内已跟踪目录。迭代通过 Qa 验收（及用户代码评审，若启用）之前，Dev 不执行任何 `git add` / `git commit`，改动保留在工作区；门禁通过后由 Pm 调度 Dev，对本次迭代全部变更按项目规范执行一次性 `git add` + `git commit`。Dev 仍是唯一执行提交的角色，Pm 不干预、不越权。
 
 ---

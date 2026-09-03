@@ -38,7 +38,7 @@ Windows 上若符号链接创建失败，追加 `--copy`。不经过 CLI 也可�
 
 ## E2E 依赖
 
-Qa 的 E2E 测试通过 [WDIO MCP server（`@wdio/mcp`](https://webdriver.io/docs/mcp/)）执行，支持浏览器与移动端。若当前环境未配置，Pm 会上报并询问你是否配置；拒绝则按降级模式继续验收（责任转移至 UAT）。
+Qa 的 E2E 按被测目标形态选工具：**PC Web 与 Electron 场景用 playwright-cli（`@playwright/cli`，文本快照 + 元素 ref 操作，token 消耗低、速度快）**；**移动端（iOS/Android 真机/模拟器）用 [WDIO MCP server（`@wdio/mcp`](https://webdriver.io/docs/mcp/)）**。工具不可用时 Pm 会上报并询问你是否安装/配置；拒绝则按降级模式继续验收（责任转移至 UAT）。
 
 ## 目录结构
 
