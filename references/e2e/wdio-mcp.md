@@ -8,11 +8,7 @@ WDIO MCP（`@wdio/mcp`）是 WebdriverIO 官方的 MCP server，以**交互式�
 
 ## 用法事实源
 
-WDIO 用法以官方文档为唯一事实源（详见 `e2e/index.md` 共通规范）：
-
-- 索引：`https://webdriver.io/llms.txt`；单页在文档页 URL 后加 `.md` 后缀
-- 环境提供文档检索类工具（如 `query_docs`）时优先使用
-- **用法不确定的 API、配置、工具参数，先查文档再操作，禁止凭记忆或旧版经验调用**
+WDIO 用法以官方文档为唯一事实源，检索入口与「先查文档、禁止凭记忆调用」规则见 `e2e/index.md` 共通规范。
 
 ## 场景要点
 
