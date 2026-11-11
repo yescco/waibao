@@ -40,9 +40,9 @@ PRD 确认后，Dev 会先产出**概要设计**（`hld.md`：回答系统/模�
 
 ## E2E 依赖
 
-Qa 的 E2E 按被测目标形态选工具：**PC Web / Electron / Tauri 场景用 [WDIO（WebDriverIO）](https://webdriver.io/docs/platforms/web/)**——PC Web 以真实浏览器运行测试，Electron 经 `@wdio/electron-service` 拉起真实应用进程，Tauri 经 `@wdio/tauri-service` 拉起已编译应用；**移动端（iOS/Android 真机/模拟器）用 [WDIO MCP server（`@wdio/mcp`）](https://webdriver.io/docs/mcp/)**。工具不可用时 Pm 会上报并询问你是否安装/配置；拒绝则按降级模式继续验收（责任转移至 UAT）。
+Qa 的 E2E 统一经 [WDIO MCP server（`@wdio/mcp`）](https://webdriver.io/docs/mcp/) 以交互式会话执行：**PC Web**（含 H5）以真实浏览器会话访问目标 URL，**Electron** 拉起真实应用进程，**移动端**（iOS/Android 真机/模拟器，经 Appium）在真机/模拟器中测试。工具用法以 [webdriver.io 官方 llms.txt 文档](https://webdriver.io/llms.txt) 为事实源，提示词不固化任何 API 与命令细节。工具不可用时 Pm 会上报并询问你是否安装/配置；拒绝则按降级模式继续验收（责任转移至 UAT）。Tauri 桌面应用暂不支持 E2E，遇到时上报并由你决策。
 
-工具路由表、共通规范与各工具命令细节在 `references/e2e/` 下独立维护，与 Qa 角色提示词解耦——扩展新测试平台只需新增一个工具说明文件并在 `references/e2e/index.md` 路由表加一行。
+工具路由表与执行规范在 `references/e2e/` 下独立维护，与 Qa 角色提示词解耦——扩展新测试平台只需新增一个工具说明文件并在 `references/e2e/index.md` 路由表加一行。
 
 ## 维护
 
