@@ -42,12 +42,17 @@ PRD 确认后，Dev 会先产出**概要设计**（`hld.md`：回答系统/模�
 
 Qa 的 E2E 按被测目标形态选工具：**PC Web 与 Electron 场景用 playwright-cli（`@playwright/cli`，文本快照 + 元素 ref 操作，token 消耗低、速度快）**；**移动端（iOS/Android 真机/模拟器）用 [WDIO MCP server（`@wdio/mcp`](https://webdriver.io/docs/mcp/)）**。工具不可用时 Pm 会上报并询问你是否安装/配置；拒绝则按降级模式继续验收（责任转移至 UAT）。
 
+工具路由表、共通规范与各工具命令细节在 `references/e2e/` 下独立维护，与 Qa 角色提示词解耦——扩展新测试平台只需新增一个工具说明文件并在 `references/e2e/index.md` 路由表加一行。
+
 ## 目录结构
 
 ```
-AGENTS.md                 # 仓库维护指南（面向维护本 skill 的 AI 代理）
-SKILL.md                  # Pm 角色设定与完整工作流
-references/dev-prompt.md  # Dev 子代理角色提示词
-references/qa-prompt.md   # Qa 子代理角色提示词（含 E2E 工具说明）
-agents/openai.yaml        # OpenAI 风格 agent 的接口元数据
+AGENTS.md                        # 仓库维护指南（面向维护本 skill 的 AI 代理）
+SKILL.md                         # Pm 角色设定与完整工作流
+references/dev-prompt.md         # Dev 子代理角色提示词
+references/qa-prompt.md          # Qa 子代理角色提示词
+references/e2e/index.md          # E2E 场景路由表 + 共通执行规范 + Pm 上报处理流程
+references/e2e/playwright-cli.md # playwright-cli 工具说明（PC Web / Electron）
+references/e2e/wdio-mcp.md       # WDIO MCP 工具说明（移动端）
+agents/openai.yaml               # OpenAI 风格 agent 的接口元数据
 ```
