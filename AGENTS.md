@@ -2,22 +2,28 @@
 
 本文件面向**维护本仓库的 AI 代理**。waibao 被安装运行时注入的是 SKILL.md 与 `references/` 下的提示词（含 `references/e2e/`），与本文件无关；SKILL.md 中「开发前必须阅读 AGENTS.md」指的是**被开发的目标项目**的 AGENTS.md，不是本文件。
 
+本仓库文档体系按**加载时机分层**：本文件常驻上下文，只放每次维护都需要的内容；操作细则在 `docs/` 下按需加载，按下表在操作前先读。
+
 ## 项目是什么
 
 waibao 是一个 agent 框架 skill（ZCode / dsh / opencode 通用）：Pm / Dev / Qa 三角色协作的全流程项目管理工作流。仓库内**没有可执行代码、依赖与构建**，全部产物是中文提示词文档。
 
-## 文件地图
+## 文档路由表
 
-| 文件 | 角色 | 修改要点 |
-| ---- | ---- | -------- |
-| `SKILL.md` | Pm 角色设定 + 完整工作流，**运行时权威源** | frontmatter 的 name/description 是框架触发路由的唯一依据 |
-| `references/dev-prompt.md` | Dev 子代理提示词，委派时全文注入子代理 | 产出物约定、迭代提交门禁、自评报告模板 |
-| `references/qa-prompt.md` | Qa 子代理提示词 | 四维度评分、E2E 执行原则、核心禁令 |
-| `references/e2e/index.md` | E2E 工具路由与上报：场景路由表、共通执行规范、Pm 上报处理流程 | Pm/Qa 共用的事实源；新增测试平台在此加路由行，不动角色提示词 |
-| `references/e2e/<工具>.md` | 各 E2E 工具说明（playwright-cli / wdio-mcp），涉及 UI 的迭代随 Qa 提示词一并注入 | 场景要点、命令表、有头模式、可用性检测、证据落盘 |
-| `agents/openai.yaml` | OpenAI 风格 agent 接口元数据 | `short_description` 须与 SKILL.md 的 description 口径一致 |
-| `README.md` | 人类向：安装、使用、流程概览 | 特性与流程描述须与 SKILL.md 一致 |
-| `AGENTS.md` | 本文件：仓库维护指南 | 不变量或同步关系变化时同步更新 |
+「何时必读」列的时机触发时，必须先读完对应文档再动手。新增或移动文档必须同步更新本表，本表是文档结构的事实源。
+
+| 文档 | 何时必读 | 修改要点 |
+| ---- | -------- | -------- |
+| `docs/prompt-guidelines.md` | 修改 SKILL.md 或 `references/` 下任何提示词之前 | 提示词编写规范 |
+| `docs/verification.md` | 任何改动宣告完成之前 | 修改后自查清单（含提醒用户更新已安装副本） |
+| `docs/git-conventions.md` | 执行 git commit 之前 | 约定式提交规范 |
+| `SKILL.md` | 修改前按下方同步表定位波及面 | Pm 角色设定 + 完整工作流，**运行时权威源**；frontmatter 的 name/description 是框架触发路由的唯一依据 |
+| `references/dev-prompt.md` | 修改前按下方同步表定位波及面 | Dev 子代理提示词，委派时全文注入子代理；产出物约定、迭代提交门禁、自评报告模板 |
+| `references/qa-prompt.md` | 修改前按下方同步表定位波及面 | Qa 子代理提示词；四维度评分、E2E 执行原则、核心禁令 |
+| `references/e2e/index.md` | 修改前按下方同步表定位波及面 | E2E 工具路由与上报：场景路由表、共通执行规范、Pm 上报处理流程；Pm/Qa 共用的事实源，新增测试平台在此加路由行，不动角色提示词 |
+| `references/e2e/<工具>.md` | 修改前按下方同步表定位波及面 | 各 E2E 工具说明（playwright-cli / wdio-mcp），涉及 UI 的迭代随 Qa 提示词一并注入；场景要点、命令表、有头模式、可用性检测、证据落盘 |
+| `agents/openai.yaml` | — | OpenAI 风格 agent 接口元数据；`short_description` 须与 SKILL.md 的 description 口径一致 |
+| `README.md` | — | 人类向：安装、使用、流程概览；特性与流程描述须与 SKILL.md 一致 |
 
 ## 核心不变量
 
@@ -46,31 +52,4 @@ waibao 是一个 agent 框架 skill（ZCode / dsh / opencode 通用）：Pm / De
 | state.md 字段与阶段取值 | — | 状态文件格式、各阶段更新处、中断恢复 | — | — | — |
 | 数据目录结构 | 使用说明 | 目录结构（数据侧）、目录结构 | — | 截图落盘约定 | index.md 共通规范的证据落盘条目 |
 
-注：README.md 的「目录结构」列的是**本仓库文件**，SKILL.md 的「目录结构」列的是**数据目录产物**，两者不是同一份清单。
-
-## 提示词编写规范
-
-- SKILL.md frontmatter：`name` 固定为 `waibao`；`description` 必须同时写清触发场景与排除场景（如「小型代码修改或单点提问不要使用」）。
-- 跨工具适配以「能力」而非工具名描述依赖；具体框架的工具映射只落在 SKILL.md「跨工具适配」表，不写进角色提示词。E2E 被测工具（playwright-cli / WDIO MCP）的命令与参数细节统一维护在 `references/e2e/`，角色提示词只保留场景路由表与执行原则。
-- 规则、评分、映射关系用表格呈现；产物文档（PRD、QA 报告、state.md 等）用 markdown 代码块给出完整模板。
-- 角色提示词保持既有骨架：角色与性格 → 调度方式 → 核心禁令 → 流程 → 格式模板 → 被打回时。新增内容归入既有章节，不另起平行体系。
-- 禁令写成可判定的硬规则（「不得」「必须」），不用建议性语气。
-
-## 验证
-
-仓库无 lint / 测试 / 构建。修改后自查：
-
-1. SKILL.md frontmatter 可解析（name / description 完整）。
-2. 各 markdown 代码块闭合，表格列数与表头一致。
-3. 按「修改必须跨文件同步」表逐行 grep 术语：改动后的旧术语在全仓库应零命中（如改了阶段名，搜旧名确认无残留）。
-4. 改动不会自动生效：已安装副本位于 `~/.agents/skills/waibao`（全局）或项目内 `.agents/skills/waibao`，完成后提醒用户重新 `npx skills add yescco/waibao` 更新。
-
-## Git
-
-- 不主动 commit / push，除非用户明确要求。
-- commit message 遵循约定式提交（Conventional Commits），格式 `<type>(<scope>): <subject>`，subject 用中文短句、祈使语气、结尾不加句号。
-  - `type` 取 `feat`（新增/变更工作流能力）、`fix`（修复工作流缺陷）、`docs`（纯文字润色与结构整理）、`refactor`、`chore`。
-  - `scope` 可选，取受影响的文件或模块：`skill`、`dev-prompt`、`qa-prompt`、`e2e`、`readme`、`agents`；跨多文件时省略。
-  - 破坏性变更在 type 后加 `!`（如 `feat!:`），并在 body 写明影响与迁移方式。
-  - 示例：`feat(skill): 新增概要设计环节，PRD 确认后先产出 hld.md 再规划迭代`；`fix(qa-prompt): E2E 必须显式 headless: false，禁止无头模式`。
-  - 历史提交中 `dev-prompt:` / `qa-prompt:` 开头的旧风格为遗留格式，不回溯改写，仅约束新提交。
+注：SKILL.md 的「目录结构」列的是**数据目录产物**（`~/.agents/waibao/projects/` 下），与仓库文件无关；仓库文件构成以上方文档路由表为事实源。
