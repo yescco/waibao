@@ -45,6 +45,7 @@ Qa 的 E2E 按被测目标形态选工具：**PC Web 与 Electron 场景用 play
 ## 目录结构
 
 ```
+AGENTS.md                 # 仓库维护指南（面向维护本 skill 的 AI 代理）
 SKILL.md                  # Pm 角色设定与完整工作流
 references/dev-prompt.md  # Dev 子代理角色提示词
 references/qa-prompt.md   # Qa 子代理角色提示词（含 E2E 工具说明）
