@@ -21,7 +21,7 @@ waibao 是一个 agent 框架 skill（ZCode / dsh / opencode 通用）：Pm / De
 | `references/dev-prompt.md` | 修改前按下方同步表定位波及面 | Dev 子代理提示词，委派时全文注入子代理；产出物约定、迭代提交门禁、自评报告模板 |
 | `references/qa-prompt.md` | 修改前按下方同步表定位波及面 | Qa 子代理提示词；四维度评分、E2E 执行原则、核心禁令 |
 | `references/e2e/index.md` | 修改前按下方同步表定位波及面 | E2E 工具路由与上报：场景路由表、共通执行规范、Pm 上报处理流程；Pm/Qa 共用的事实源，新增测试平台在此加路由行，不动角色提示词 |
-| `references/e2e/<工具>.md` | 修改前按下方同步表定位波及面 | 各 E2E 工具说明（playwright-cli / wdio-mcp），涉及 UI 的迭代随 Qa 提示词一并注入；场景要点、命令表、有头模式、可用性检测、证据落盘 |
+| `references/e2e/<工具>.md` | 修改前按下方同步表定位波及面 | 各 E2E 工具说明（wdio / wdio-mcp），涉及 UI 的迭代随 Qa 提示词一并注入；场景要点、命令表、有头模式、可用性检测、证据落盘 |
 | `agents/openai.yaml` | — | OpenAI 风格 agent 接口元数据；`short_description` 须与 SKILL.md 的 description 口径一致 |
 | `README.md` | — | 人类向：安装、使用、流程概览；特性与流程描述须与 SKILL.md 一致 |
 
@@ -29,11 +29,11 @@ waibao 是一个 agent 框架 skill（ZCode / dsh / opencode 通用）：Pm / De
 
 修改任何提示词不得破坏以下约束：
 
-1. **非侵入**：工作流产物只写 `~/.agents/waibao/projects/<项目名>/`，项目目录除 Dev 的源码改动外零写入；E2E 工具的安装/注册在用户级完成。
-2. **角色权限**：Pm 不碰源码、不执行 git 写操作；Dev 是唯一修改源码并 commit 的角色；Qa 只读代码，只产出报告文本与截图证据。
+1. **非侵入**：工作流产物只写 `~/.agents/waibao/projects/<项目名>/`，项目目录除 Dev 的源码改动外零写入；E2E 依赖安装不写入项目目录（WDIO 依赖装在迭代 `e2e/` 工作区，MCP 注册在用户级）。
+2. **角色权限**：Pm 不碰源码、不执行 git 写操作；Dev 是唯一修改源码并 commit 的角色；Qa 只读代码，只产出报告文本、截图证据与迭代目录下的 E2E 测试工作区。
 3. **迭代提交门禁**：迭代通过 Qa 验收（及用户代码评审，若启用）之前，Dev 不得 `git add` / `git commit`；全部通过后由 Dev 一次性提交。
 4. **中转通信**：Dev 与 Qa 互不直连，一切信息经 Pm 中转；子代理只返回文本，工作流文档落盘由 Pm 负责。
-5. **真实平台 E2E**：被测应用是什么平台就在该平台真实运行上下文中测试（PC Web 用浏览器、Electron 用 CDP attach 应用进程、移动端用真机/模拟器），禁止跨上下文取巧；浏览器一律有头模式。
+5. **真实平台 E2E**：被测应用是什么平台就在该平台真实运行上下文中测试（PC Web 用真实浏览器、Electron/Tauri 由 WDIO service 拉起真实应用、移动端用真机/模拟器），禁止跨上下文取巧；浏览器一律有头模式。
 6. **降级有责**：无子代理机制 → 单角色串行模式；E2E 工具缺失 → 上报 Pm → 用户决策 → 降级模式（功能性/视觉不评分，责任转移至 UAT）；退化计数 ≥ 3 → blocked 交用户决策。
 7. **全中文提示词**：面向中文用户编写；工具名、命令、文件名保留英文原文。
 

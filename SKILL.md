@@ -40,7 +40,7 @@ description: waibao（外包）模式——Pm/Dev/Qa 三角色协作的全流程
 | 子代理调度 | ZCode：`Agent` 工具（subagent_type: general-purpose）；dsh：`subagent` 工具（无类型参数，角色由注入的 prompt 决定）；opencode：`task` 工具 | 降级为单角色串行模式（见下） |
 | 结构化提问 | ZCode：`AskUserQuestion`；dsh：`ask_user_question` | 用纯文本编号选项（见「沟通风格」） |
 | 文件读写 / shell 执行 | 各框架均有（Read/Write/Edit/Bash 等） | 必有，无需降级 |
-| E2E 测试 | 按被测形态路由（PC Web/Electron 用 playwright-cli、移动端用 WDIO MCP），路由表与工具说明见 `references/e2e/`，调度 Qa 时注入对应文件 | 触发 `references/e2e/index.md` 的「Pm 上报处理流程」 |
+| E2E 测试 | 按被测形态路由（PC Web/Electron/Tauri 用 WDIO、移动端用 WDIO MCP），路由表与工具说明见 `references/e2e/`，调度 Qa 时注入对应文件 | 触发 `references/e2e/index.md` 的「Pm 上报处理流程」 |
 
 **降级单角色串行模式**（环境无子代理机制时）：由你在同一上下文中依次切换 Dev / Qa 视角完成任务，但必须保持验收纪律：
 
@@ -65,7 +65,7 @@ description: waibao（外包）模式——Pm/Dev/Qa 三角色协作的全流程
 1. 每次委派前，先读取对应角色提示词文件（位于本 skill 目录的 `references/` 下；按用户主目录安装时即 `~/.agents/skills/waibao/references/`）：
    - Dev：`references/dev-prompt.md`
    - Qa：`references/qa-prompt.md`
-2. 调用时，`prompt` = 角色提示词全文 + 本次任务上下文。传给 Dev：任务类型（产出概要设计 / 规划迭代 / 开发 / 修复 / 提交）、PRD 全文、概要设计全文（`hld.md`，概要设计确认之后的委派一律携带）、本次迭代目标、上一轮 QA 报告（如有）、用户评审意见（如有，评审打回时）、迭代提交门禁通知或提交指令（开发/修复时注明「门禁通过前不得 commit」，门禁通过后注明「请提交本次迭代全部变更」）。传给 Qa：本次迭代目标、被测目标形态（PC Web / Electron / 移动端——据实判定并注明）、关联 PRD 需求、概要设计全文（供代码质量维度对照实现与设计的一致性）、Dev 自评报告、上次 QA 报告（如有）、用户评审意见（如有，评审打回后重新验收时）、迭代目录绝对路径（供 Qa 存放 E2E 截图证据）、E2E 工具说明文件全文（`references/e2e/index.md` + 按被测形态选定的 `references/e2e/<工具>.md`，涉及 UI 的迭代必须注入，Qa 按文件执行 E2E）。
+2. 调用时，`prompt` = 角色提示词全文 + 本次任务上下文。传给 Dev：任务类型（产出概要设计 / 规划迭代 / 开发 / 修复 / 提交）、PRD 全文、概要设计全文（`hld.md`，概要设计确认之后的委派一律携带）、本次迭代目标、上一轮 QA 报告（如有）、用户评审意见（如有，评审打回时）、迭代提交门禁通知或提交指令（开发/修复时注明「门禁通过前不得 commit」，门禁通过后注明「请提交本次迭代全部变更」）。传给 Qa：本次迭代目标、被测目标形态（PC Web / Electron / Tauri / 移动端——据实判定并注明）、关联 PRD 需求、概要设计全文（供代码质量维度对照实现与设计的一致性）、Dev 自评报告、上次 QA 报告（如有）、用户评审意见（如有，评审打回后重新验收时）、迭代目录绝对路径（供 Qa 存放 E2E 截图证据与测试工作区）、E2E 工具说明文件全文（`references/e2e/index.md` + 按被测形态选定的 `references/e2e/<工具>.md`，涉及 UI 的迭代必须注入，Qa 按文件执行 E2E）。
    - dsh 的 `subagent` 工具要求 prompt 完全自包含，本协议的注入方式天然满足；若其子代理继承父对话上下文（fork 模式），仍须完整注入角色提示词，且 Qa 的评审只依据落盘产物与项目代码，不得引用对话记忆。
 3. **子代理只返回文本结论**（迭代计划、自评报告、QA 报告全文）。所有工作流文档一律由你（Pm）写入 `<DATA>` 下对应文件。
 4. Dev 是唯一允许修改项目源码并 `git commit` 的角色（提交受迭代提交门禁约束，见「非侵入与 Git 约定」）；Qa 只读代码、只产出报告文本与截图证据文件。
@@ -185,7 +185,7 @@ C. 先生成低保真原型确认
 
 1. **调度 Dev**：通过子代理调度工具委派 Dev 子代理处理本次迭代开发（注入 Dev 角色提示词，传入上下文（含关联 PRD 需求与概要设计全文）和本次迭代内容，并注明「迭代提交门禁：验收（及用户评审，若启用）通过前不得 commit」）。
 2. **Dev 完成自评**：Dev 返回自评报告全文 → 你写入 `<DATA>/tasks/task-YYYYMMDD-{slug}/iter-N/self-check.md`。
-3. **调度 Qa**：涉及 UI 或用户交互的迭代，先判定本次迭代的被测目标形态（PC Web / Electron / 移动端，按 PRD 与项目实际运行形态据实判定），再按 `references/e2e/index.md` 的场景路由表确认该场景对应的 E2E 工具可用（不可用按其「Pm 上报处理流程」处理）。**Electron 场景必须先由你以调试端口启动被测应用、确认端口可访问（如 `curl http://localhost:9222/json/version` 有响应）后再调度 Qa**，避免 Qa 因连不上应用而自行降级为浏览器打开页面。随后通过子代理调度工具委派 Qa 子代理进行四维度验收（注入 Qa 角色提示词 + E2E 工具说明文件（`references/e2e/index.md` 与按形态选定的工具文件），传入本次迭代的 PRD 需求、概要设计全文、Dev 自评报告、迭代目标、被测目标形态、迭代目录绝对路径；若是用户评审打回后的修复，一并传入用户评审意见）。
+3. **调度 Qa**：涉及 UI 或用户交互的迭代，先判定本次迭代的被测目标形态（PC Web / Electron / Tauri / 移动端，按 PRD 与项目实际运行形态据实判定），再按 `references/e2e/index.md` 的场景路由表确认该场景对应的 E2E 工具可用（不可用按其「Pm 上报处理流程」处理）。**Electron 场景先向 Qa 提供应用主进程入口路径（从项目 `package.json` 的 `main` 或构建产物入口解析）；Tauri 场景先确认已编译的应用二进制存在（无产物先委托 Dev 构建或请用户手动构建），并将二进制路径告知 Qa**——避免 Qa 因拿不到真实应用而自行降级为浏览器打开页面。随后通过子代理调度工具委派 Qa 子代理进行四维度验收（注入 Qa 角色提示词 + E2E 工具说明文件（`references/e2e/index.md` 与按形态选定的工具文件），传入本次迭代的 PRD 需求、概要设计全文、Dev 自评报告、迭代目标、被测目标形态、迭代目录绝对路径；若是用户评审打回后的修复，一并传入用户评审意见）。
 4. **Qa 返回结果**：将 Qa 报告全文写入 `<DATA>/tasks/task-YYYYMMDD-{slug}/iter-N/qa-report.md`。
    - **通过**：若任务启用用户代码评审 → 进入步骤 5（用户代码评审）；未启用 → 直接进入步骤 6（调度 Dev 提交）。
    - **不通过**：检查退化计数：
@@ -201,7 +201,7 @@ C. 先生成低保真原型确认
 
 ## E2E 工具上报流程
 
-E2E 工具按被测形态路由（场景路由表见 `references/e2e/index.md`）。调度 Qa 前发现工具缺失，或收到 Qa 上报工具不可用时，按 `references/e2e/index.md` 的「Pm 上报处理流程」处理（涵盖 playwright-cli 缺失、WDIO MCP 未配置、Electron 未以调试端口运行、用户拒绝安装/配置四种情形）。
+E2E 工具按被测形态路由（场景路由表见 `references/e2e/index.md`）。调度 Qa 前发现工具缺失，或收到 Qa 上报工具不可用时，按 `references/e2e/index.md` 的「Pm 上报处理流程」处理（涵盖 wdio 环境不可用、Electron 应用入口未提供、Tauri 二进制未构建、WDIO MCP 未配置、用户拒绝安装/配置五种情形）。
 
 ---
 
@@ -293,7 +293,7 @@ E2E 工具按被测形态路由（场景路由表见 `references/e2e/index.md`�
 # 非侵入与 Git 约定
 
 - 所有工作流文档产物（PRD、hld.md、state.md、iterations.md、self-check.md、qa-report.md、user-review.md、index.md、E2E 截图）全部位于 `~/.agents/waibao/`（用户主目录），项目目录除 Dev 的源码改动外零写入，因此**无需在项目 `.gitignore` 中添加任何规则**。
-- E2E 工具的安装/注册（playwright-cli 的全局安装、WDIO MCP 的注册配置）均在用户级/工具级完成，不写入项目目录。
+- E2E 工具的安装/注册（WDIO 依赖由 Qa 安装在迭代目录的 `e2e/` 工作区内、WDIO MCP 的注册配置在用户级/工具级完成）不写入项目目录。
 - **Dev 的代码提交（迭代提交门禁制）**：Dev 修改的源码、配置、测试位于项目内已跟踪目录。迭代通过 Qa 验收（及用户代码评审，若启用）之前，Dev 不执行任何 `git add` / `git commit`，改动保留在工作区；门禁通过后由 Pm 调度 Dev，对本次迭代全部变更按项目规范执行一次性 `git add` + `git commit`。Dev 仍是唯一执行提交的角色，Pm 不干预、不越权。
 
 ---
