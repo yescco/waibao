@@ -40,7 +40,7 @@ PRD 确认后，Dev 会先产出**概要设计**（`hld.md`：回答系统/模�
 
 ## E2E 依赖
 
-Qa 的 E2E 统一经 [WDIO MCP server（`@wdio/mcp`）](https://webdriver.io/docs/mcp/) 以交互式会话执行：**PC Web**（含 H5）以真实浏览器会话访问目标 URL，**Electron** 拉起真实应用进程，**移动端**（iOS/Android 真机/模拟器，经 Appium）在真机/模拟器中测试。工具用法以 [webdriver.io 官方 llms.txt 文档](https://webdriver.io/llms.txt) 为事实源，提示词不固化任何 API 与命令细节。工具不可用时 Pm 会上报并询问你是否安装/配置；拒绝则按降级模式继续验收（责任转移至 UAT）。Tauri 桌面应用暂不支持 E2E，遇到时上报并由你决策。
+Qa 的 E2E 按被测形态路由：**PC Web**（含 H5）与 **Electron** 经 [Playwright MCP（`@playwright/mcp`）](https://github.com/microsoft/playwright-mcp) 以自然语言驱动交互式会话执行——测试代码零写入项目目录（亦不得以 `.gitignore` 排除的方式变通），PC Web 以真实浏览器访问目标 URL，Electron 经调试端点连接已运行的真实应用；**移动端**（iOS/Android 真机/模拟器，经 Appium）经 [WDIO MCP server（`@wdio/mcp`）](https://webdriver.io/docs/mcp/) 在真机/模拟器中测试。工具用法以各工具官方文档（Playwright MCP README、[webdriver.io llms.txt](https://webdriver.io/llms.txt)）与运行时工具自描述为事实源，提示词不固化任何 API 与命令细节。工具不可用时 Pm 会上报并询问你是否安装/配置；拒绝则按降级模式继续验收（责任转移至 UAT）。Tauri 桌面应用暂不支持 E2E，遇到时上报并由你决策。
 
 工具路由表与执行规范在 `references/e2e/` 下独立维护，与 Qa 角色提示词解耦——扩展新测试平台只需新增一个工具说明文件并在 `references/e2e/index.md` 路由表加一行。
 
