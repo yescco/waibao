@@ -40,7 +40,7 @@ description: waibao（外包）模式——Pm/Dev/Qa 三角色协作的全流程
 | 子代理调度 | ZCode：`Agent` 工具（subagent_type: general-purpose）；dsh：`subagent` 工具（无类型参数，角色由注入的 prompt 决定）；opencode：`task` 工具 | 降级为单角色串行模式（见下） |
 | 结构化提问 | ZCode：`AskUserQuestion`；dsh：`ask_user_question` | 用纯文本编号选项（见「沟通风格」） |
 | 文件读写 / shell 执行 | 各框架均有（Read/Write/Edit/Bash 等） | 必有，无需降级 |
-| E2E 测试 | 按被测形态路由（PC Web/Electron 用 Playwright MCP——自然语言驱动、测试代码不写入项目目录；移动端用 WDIO MCP），路由表与工具说明见 `references/e2e/`，调度 Qa 时注入对应文件 | 触发 `references/e2e/index.md` 的「Pm 上报处理流程」 |
+| E2E 测试 | 按被测形态路由（PC Web/Electron 用 Playwright CLI——自然语言驱动逐步探索、测试代码不写入项目目录；移动端用 WDIO MCP），路由表与工具说明见 `references/e2e/`，调度 Qa 时注入对应文件 | 触发 `references/e2e/index.md` 的「Pm 上报处理流程」 |
 
 **降级单角色串行模式**（环境无子代理机制时）：由你在同一上下文中依次切换 Dev / Qa 视角完成任务，但必须保持验收纪律：
 
@@ -210,7 +210,7 @@ C. 先生成低保真原型确认
 
 ## E2E 工具上报流程
 
-E2E 工具按被测形态路由（场景路由表见 `references/e2e/index.md`）。调度 Qa 前发现工具缺失，或收到 Qa 上报工具不可用 / 被测形态超出路由表时，按 `references/e2e/index.md` 的「Pm 上报处理流程」处理（涵盖 E2E 工具未配置（Playwright MCP / WDIO MCP）、Electron 被测应用未运行、被测形态超出路由表（如 Tauri）、用户拒绝安装/配置四种情形）。
+E2E 工具按被测形态路由（场景路由表见 `references/e2e/index.md`）。调度 Qa 前发现工具缺失，或收到 Qa 上报工具不可用 / 被测形态超出路由表时，按 `references/e2e/index.md` 的「Pm 上报处理流程」处理（涵盖 E2E 工具未配置（Playwright CLI / WDIO MCP）、Electron 被测应用未运行、被测形态超出路由表（如 Tauri）、用户拒绝安装/配置四种情形）。
 
 ---
 
@@ -302,7 +302,7 @@ E2E 工具按被测形态路由（场景路由表见 `references/e2e/index.md`�
 # 非侵入与 Git 约定
 
 - 所有工作流文档产物（PRD、hld.md、state.md、iterations.md、self-check.md、qa-report.md、user-review.md、index.md、E2E 截图）全部位于 `~/.agents/waibao/`（用户主目录），项目目录除 Dev 的源码改动外零写入，因此**无需在项目 `.gitignore` 中添加任何规则**——E2E 测试代码亦零写入项目目录，不得以 `.gitignore` 排除的方式变通。
-- E2E 工具的注册（Playwright MCP / WDIO MCP 的注册配置在用户级/工具级完成）不写入项目目录。
+- E2E 工具的安装与注册（Playwright CLI 全局安装、WDIO MCP 注册在用户级/工具级配置）不写入项目目录。
 - **Dev 的代码提交（迭代提交门禁制，定义见阶段五）**：Dev 修改的源码、配置、测试位于项目内已跟踪目录；验收与评审全部通过前改动保留在工作区，通过后由 Pm 调度 Dev 按项目规范对本次迭代全部变更一次性提交。Dev 仍是唯一执行提交的角色，Pm 不干预、不越权。
 
 ---
