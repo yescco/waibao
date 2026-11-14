@@ -40,7 +40,7 @@ PRD 确认后，Dev 会先产出**概要设计**（`hld.md`：回答系统/模�
 
 ## E2E 依赖
 
-Qa 的 E2E 按被测形态路由：**PC Web**（含 H5）与 **Electron** 经 [Playwright CLI（`@playwright/cli`）](https://playwright.dev/agent-cli/) 以自然语言驱动逐步探索执行——测试代码零写入项目目录（亦不得以 `.gitignore` 排除的方式变通），PC Web 以真实浏览器访问目标 URL，Electron 经 CDP 端点连接已运行的真实应用；**移动端**（iOS/Android 真机/模拟器，经 Appium）经 [WDIO MCP server（`@wdio/mcp`）](https://webdriver.io/docs/mcp/) 在真机/模拟器中测试。工具用法以各工具官方文档（Playwright CLI 文档站、[webdriver.io llms.txt](https://webdriver.io/llms.txt)）与运行时自描述为事实源，提示词不固化任何 API 与命令细节。工具不可用时 Pm 会上报并询问你是否安装/配置；拒绝则按降级模式继续验收（责任转移至 UAT）。Tauri 桌面应用暂不支持 E2E，遇到时上报并由你决策。
+Qa 的 E2E 按被测形态路由：**PC Web**（含 H5）与 **Electron** 经 [Playwright CLI（`@playwright/cli`）](https://playwright.dev/agent-cli/) 以自然语言驱动逐步探索执行——测试代码零写入项目目录（亦不得以 `.gitignore` 排除的方式变通），PC Web 以真实浏览器访问目标 URL，Electron 经 CDP 端点连接已运行的真实应用；**移动端**（iOS/Android 真机/模拟器，经 Appium）经 [WDIO MCP server（`@wdio/mcp`）](https://webdriver.io/docs/mcp/) 在真机/模拟器中测试；**Avalonia 桌面应用（Windows）**经 [Appium（appium-windows-driver）](https://github.com/appium/appium-windows-driver)（[Avalonia 官方推荐](https://docs.avaloniaui.net/docs/testing/ui-testing-with-appium)）驱动真实应用窗口、按无障碍树交互式探索执行——Appium server 由你启动并保持运行。工具用法以各工具官方文档（Playwright CLI 文档站、[webdriver.io llms.txt](https://webdriver.io/llms.txt)、appium-windows-driver 文档）与运行时自描述为事实源，提示词不固化任何 API 与命令细节。工具不可用时 Pm 会上报并询问你是否安装/配置；拒绝则按降级模式继续验收（责任转移至 UAT）。Tauri 桌面应用暂不支持 E2E，遇到时上报并由你决策。
 
 工具路由表与执行规范在 `references/e2e/` 下独立维护，与 Qa 角色提示词解耦——扩展新测试平台只需新增一个工具说明文件并在 `references/e2e/index.md` 路由表加一行。
 

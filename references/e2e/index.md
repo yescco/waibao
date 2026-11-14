@@ -10,11 +10,12 @@ E2E 工具按**被测目标形态**选择，禁止不区分场景一律使用同
 | ---- | ---- | -------- |
 | PC Web 页面（URL 可访问的页面，含移动端风格的 H5 页面） | Playwright CLI（`@playwright/cli`） | `e2e/playwright-cli.md` |
 | Electron 桌面应用 | Playwright CLI（经 CDP 端点连接已运行的真实应用） | `e2e/playwright-cli.md` |
+| Avalonia 桌面应用（Windows） | Appium（appium-windows-driver，经 Appium server 驱动真实应用窗口） | `e2e/appium-windows.md` |
 | 移动端（iOS/Android 真机或模拟器，经 Appium） | WDIO MCP（`@wdio/mcp`） | `e2e/wdio-mcp.md` |
 
 被测形态不在路由表内（如 Tauri 桌面应用）时，Qa 向 Pm 上报，按「Pm 上报处理流程」交用户决策，**不得自行默认按任一场景处理**。
 
-**核心原则：被测应用是什么平台，E2E 就必须在该平台的真实运行上下文中执行，禁止跨上下文取巧**——PC Web 在真实浏览器中访问目标 URL；Electron 在已运行的真实应用进程中测试（经调试端点连接，Qa 不启动应用），浏览器里打开的渲染页面 / dev URL 不是 Electron 上下文；移动端在真机/模拟器中测试，桌面浏览器的视口模拟不是移动端上下文。
+**核心原则：被测应用是什么平台，E2E 就必须在该平台的真实运行上下文中执行，禁止跨上下文取巧**——PC Web 在真实浏览器中访问目标 URL；Electron 在已运行的真实应用进程中测试（经调试端点连接，Qa 不启动应用），浏览器里打开的渲染页面 / dev URL 不是 Electron 上下文；Avalonia（Windows）在真实应用窗口中测试（经 Appium 会话启动或附加），headless 平台测试 / 浏览器页面不是桌面应用上下文；移动端在真机/模拟器中测试，桌面浏览器的视口模拟不是移动端上下文。
 
 ## 共通执行规范
 
@@ -32,7 +33,8 @@ E2E 工具按**被测目标形态**选择，禁止不区分场景一律使用同
 
 Qa 上报工具不可用或被测形态超出路由表时，或 Pm 调度 Qa 前确认工具可用性时，按以下流程处理：
 
-1. **E2E 工具未配置**：按场景确定缺失的工具——PC Web / Electron 场景为 Playwright CLI（`@playwright/cli`，微软官方命令行工具，驱动桌面浏览器、经 CDP 端点连接 Electron 应用），移动端场景为 WDIO MCP（`@wdio/mcp`，WebDriverIO 官方 MCP server，经 Appium 支持 iOS/Android 真机/模拟器）。告知用户当前环境未安装 / 未配置对应工具，询问是否现在安装 / 配置；用户同意则引导安装或注册在用户级环境（Playwright CLI 全局安装、WDIO MCP 注册在用户级/工具级配置），保持项目目录零侵入，具体安装与配置方式以官方文档为准，Pm 不预设。WDIO MCP 配置生效可能需要重启会话——工作流状态已持久化在 `state.md`，重启后重新触发本 skill 即可按「中断恢复」续接，然后重新调度 Qa。
+1. **E2E 工具未配置**：按场景确定缺失的工具——PC Web / Electron 场景为 Playwright CLI（`@playwright/cli`，微软官方命令行工具，驱动桌面浏览器、经 CDP 端点连接 Electron 应用），移动端场景为 WDIO MCP（`@wdio/mcp`，WebDriverIO 官方 MCP server，经 Appium 支持 iOS/Android 真机/模拟器），Avalonia（Windows）场景为 Appium（appium-windows-driver，Avalonia 官方 E2E 通道，经 Appium server 驱动 Windows 桌面应用真实窗口）。告知用户当前环境未安装 / 未配置对应工具，询问是否现在安装 / 配置；用户同意则引导安装或注册在用户级环境（Playwright CLI 全局安装、WDIO MCP 注册在用户级/工具级配置、Appium server 与 windows driver 安装在用户级环境），保持项目目录零侵入，具体安装与配置方式以官方文档为准，Pm 不预设。WDIO MCP 配置生效可能需要重启会话——工作流状态已持久化在 `state.md`，重启后重新触发本 skill 即可按「中断恢复」续接，然后重新调度 Qa。
 2. **Electron 场景（被测应用未运行 / 调试端点未提供）**：由 Pm 确认被测 Electron 应用已以远程调试端口运行——未运行则请用户启动（可从项目配置如 `package.json` 解析启动方式供参考），运行后向 Qa 提供调试端点信息。Qa 不执行应用启动命令。
-3. **被测形态超出路由表（如 Tauri）**：告知用户当前工作流暂不支持该形态的 E2E 工具，询问是否按降级模式验收或由用户另行决策。
-4. **用户拒绝安装/配置**：通知 Qa 按「E2E 降级模式」继续验收——功能性、视觉设计两维度不评分并注明原因，产品完整性与代码质量照常评分，迭代不因此判不通过，验收责任转移至用户 UAT。降级不消耗退化计数。
+3. **Avalonia 场景（Appium server 未运行 / 构建产物路径未提供）**：由 Pm 请用户启动并保持 Appium server（常驻进程，Qa 不启动）；构建产物路径未提供时，从项目构建产物解析或由 Qa 经项目构建命令产出，仍不可得则请用户提供。被测应用的启动由 Appium 会话承担或附加已运行窗口，Qa 不直接执行应用启动命令。
+4. **被测形态超出路由表（如 Tauri）**：告知用户当前工作流暂不支持该形态的 E2E 工具，询问是否按降级模式验收或由用户另行决策。
+5. **用户拒绝安装/配置**：通知 Qa 按「E2E 降级模式」继续验收——功能性、视觉设计两维度不评分并注明原因，产品完整性与代码质量照常评分，迭代不因此判不通过，验收责任转移至用户 UAT。降级不消耗退化计数。
